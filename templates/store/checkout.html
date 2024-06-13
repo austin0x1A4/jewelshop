@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<div class="container">
+    <!-- HERO SECTION-->
+    <section class="py-5 bg-light">
+        <div class="container">
+            <div class="row px-4 px-lg-5 py-lg-4 align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="h2 text-uppercase mb-0">Checkout</h1>
+                </div>
+                <div class="col-lg-6 text-lg-right">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb justify-content-lg-end mb-0 px-0">
+                            <li class="breadcrumb-item"><a href="{% url 'store:home' %}">Home</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'store:cart' %}">Cart</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">Checkout</li>
+                        </ol>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if combined_data %}
+    <section class="py-5">
+        <h2 class="h5 text-uppercase mb-4">Your Order</h2>
+
+        {% include 'partials/_messages.html' %}
+
+        <div class="row">
+            <div class="col-lg-8 mb-4 mb-lg-0">
+                <!-- ORDER DETAILS TABLE -->
+                <div class="table-responsive mb-4">
+                    <table class="table">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0" scope="col"><strong class="text-small text-uppercase">Product</strong></th>
+                                <th class="border-0" scope="col"><strong class="text-small text-uppercase">Price</strong></th>
+                                <th class="border-0" scope="col"><strong class="text-small text-uppercase">Quantity</strong></th>
+                                <th class="border-0" scope="col"><strong class="text-small text-uppercase">Total</strong></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cart_product, total_price in combined_data %}
+                            <tr>
+                                <th class="pl-0 border-0" scope="row">
+                                    <div class="media align-items-center">
+                                        {% if cart_product.product.product_image %}
+                                        <a class="reset-anchor d-block animsition-link" href="{% url 'store:product-detail' cart_product.product.slug %}">
+                                            <img src="{{ cart_product.product.product_image.url }}" alt="{{ cart_product.product.title }}" width="70" />
+                                        </a>
+                                        {% endif %}
+                                        <div class="media-body ml-3">
+                                            <strong class="h6">
+                                                <a class="reset-anchor animsition-link" href="{% url 'store:product-detail' cart_product.product.slug %}">{{ cart_product.product.title }}</a>
+                                            </strong>
+                                        </div>
+                                    </div>
+                                </th>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">${{ cart_product.product.price }}</p>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <span>{{ cart_product.quantity }}</span>
+                                </td>
+                                <td class="align-middle border-0">
+                                    <p class="mb-0 small">${{ total_price }}</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- ORDER SUMMARY -->
+            <div class="col-lg-4">
+                <div class="card border-0 rounded-0 p-lg-4 bg-light">
+                    <div class="card-body">
+                        <h5 class="text-uppercase mb-4">Order Summary</h5>
+                        <ul class="list-unstyled mb-0">
+                            <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Subtotal</strong><span class="text-muted small">${{ amount }}</span></li>
+                            <li class="border-bottom my-2"></li>
+                            <li class="d-flex align-items-center justify-content-between mb-4"><strong class="text-uppercase small font-weight-bold">Shipping</strong><span class="text-muted small">${{ shipping_amount }}</span></li>
+                            <li class="d-flex align-items-center justify-content-between"><strong class="text-uppercase small font-weight-bold">Total</strong><span>${{ total_amount }}</span></li>
+                        </ul>
+                        <h5 class="text-uppercase my-5">Shipping Address</h5>
+                        <div id="address-view">
+                            <p><strong>{{ address.first_name }} {{ address.last_name }}</strong></p>
+                            <p>{{ address.address_line1 }}</p>
+                            {% if address.address_line2 %}
+                            <p>{{ address.address_line2 }}</p>
+                            {% endif %}
+                            <p>{{ address.city }}, {{ address.state }} {{ address.zip_code }}</p>
+                            <p>{{ address.country.name }}</p>
+                            <p><strong>Email:</strong> {{ address.email }}</p>
+                            <p><strong>Phone:</strong> {{ address.phone }}</p>
+                            
+                        </div>
+                        <div id="address-edit" style="display: none;">
+                            <form action="{% url 'store:checkout' %}" method="post">
+                                {% csrf_token %}
+                                {{ form.as_p }}
+                                <button class="btn btn-dark" type="submit" id="save-address-btn">Save</button>
+                                <button class="btn btn-secondary" type="button" id="cancel-edit-btn">Cancel</button>
+                                <input type="hidden" name="address_id" value="{{ address.id }}">
+                            </form>
+                        </div>
+                        <form action="{% url 'store:process_payment' %}" method="post" id="checkout-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="orderReferenceId" id="orderReferenceId">
+                            <button class="btn btn-dark mt-3" type="submit">Pay</button>
+                        </form>
+                        <!-- Amazon Pay Button -->
+                        <div id="AmazonPayButton"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% else %}
+    <div class="text-center py-5">
+        <h3 class="mb-3">Your cart is empty.</h3>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Amazon Pay Scripts -->
+<script src="https://static-na.payments-amazon.com/OffAmazonPayments/us/js/Widgets.js"></script>
+<script type="text/javascript">
+    OffAmazonPayments.Button("AmazonPayButton", "{{ merchant_id }}", {
+        type: "PwA",
+        color: "Gold",
+        size: "medium",
+        authorization: function() {
+            loginWithAmazon.authorize({
+                scope: "profile payments:widget payments:shipping_address",
+                popup: true
+            }, function(response) {
+                if (response.error) {
+                    // handle error
+                    console.log(response.error);
+                    return;
+                }
+                document.getElementById("orderReferenceId").value = response.orderReferenceId;
+                document.getElementById("checkout-form").submit();
+            });
+        },
+        onError: function(error) {
+            // your error handling code
+            console.log(error.getErrorCode() + ': ' + error.getErrorMessage());
+        }
+    });
+</script>
+<script>
+    document.getElementById('edit-address-btn').addEventListener('click', function() {
+        document.getElementById('address-view').style.display = 'none';
+        document.getElementById('address-edit').style.display = 'block';
+    });
+
+    document.getElementById('cancel-edit-btn').addEventListener('click', function() {
+        document.getElementById('address-view').style.display = 'block';
+        document.getElementById('address-edit').style.display = 'none';
+    });
+</script>
+{% endblock content %}

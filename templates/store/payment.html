@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2>Complete your payment</h2>
+    <p>Total amount to be charged: ${{ total_price }}</p>
+
+    <form id="payment-form">
+        <div id="card-element">
+            <!-- A Stripe Element will be inserted here. -->
+        </div>
+
+        <!-- Used to display form errors. -->
+        <div id="card-errors" role="alert"></div>
+
+        <button id="submit">Pay</button>
+    </form>
+</div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');  // Add your Stripe public key
+    var elements = stripe.elements();
+
+    // Create an instance of the card Element.
+    var card = elements.create('card');
+
+    // Add an instance of the card Element into the `card-element` <div>.
+    card.mount('#card-element');
+
+    // Handle real-time validation errors from the card Element.
+    card.on('change', function(event) {
+        var displayError = document.getElementById('card-errors');
+        if (event.error) {
+            displayError.textContent = event.error.message;
+        } else {
+            displayError.textContent = '';
+        }
+    });
+
+    // Handle form submission.
+    var form = document.getElementById('payment-form');
+    form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        stripe.confirmCardPayment('{{ client_secret }}', {
+            payment_method: {
+                card: card,
+                billing_details: {
+                    name: '{{ first_name }} {{ last_name }}',
+                    email: '{{ email }}'
+                }
+            }
+        }).then(function(result) {
+            if (result.error) {
+                // Show error to your customer.
+                var displayError = document.getElementById('card-errors');
+                displayError.textContent = result.error.message;
+            } else {
+                // The payment has been processed!
+                if (result.paymentIntent.status === 'succeeded') {
+                    window.location.href = "{% url 'store:payment_success' %}";
+                }
+            }
+        });
+    });
+</script>
+{% endblock content %}
