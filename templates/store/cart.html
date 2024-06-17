@@ -96,16 +96,22 @@
                             {% csrf_token %}
                             <div class="form-group">
                                 <label for="address">Select Address</label>
-                                <select class="form-control" id="address" name="address_id" required>
-                                    <option value="">-- Select Address --</option>
+                                <div id="address" class="address-options">
                                     {% for address in addresses %}
-                                    <option value="{{ address.id }}" {% if selected_address and selected_address.id == address.id %}selected{% endif %}>{{ address.address_line1 }}, {{ address.city }}, {{ address.state }}, {{ address.zip_code }}</option>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" id="address_{{ address.id }}" name="address_id" value="{{ address.id }}" 
+                                            {% if selected_address and selected_address.id == address.id %}checked{% endif %} required>
+                                        <label class="form-check-label" for="address_{{ address.id }}">
+                                            {{ address.address_line1 }}, {{ address.city }}, {{ address.state }}, {{ address.zip_code }}
+                                        </label>
+                                    </div>
                                     {% endfor %}
-                                </select>
+                                </div>
                             </div>
-                            
-                            <button class="btn btn-dark mt-3" type="submit">Proceed to Checkout</button>
+                            <button type="submit" class="btn btn-primary">Proceed to Checkout</button>
                         </form>
+                        
+                           \
                         <!-- Add New Address Button -->
 <button type="button" class="btn btn-dark mt-3" data-toggle="modal" data-target="#addAddressModal">Add New Address</button>
 

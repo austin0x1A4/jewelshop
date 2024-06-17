@@ -97,16 +97,7 @@ class AddressView(View):
                     address = Address(user=user, **cleaned_data)
                     address.save()
                     messages.success(request, "New Address Added Successfully.")
-                    return JsonResponse({
-                        'success': True,
-                        'address': {
-                            'id': address.id,
-                            'city': address.city,
-                            'state': address.state,
-                            'country': str(address.country)
-                        },
-                        'address_count': Address.objects.filter(user=user).count()
-                    })
+                    
                 except IntegrityError:
                     messages.error(request, "An error occurred while saving the address. Please try again.")
                     return JsonResponse({'success': False, 'message': 'Integrity error.'})
