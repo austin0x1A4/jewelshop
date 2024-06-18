@@ -27,8 +27,8 @@ AMAZON_PAY = {
     'region': 'us'  # Change based on your region
 }
 
-#STRIPE_PUBLIC_KEY = 'pk_test_51P6bjmP7mfHF0Evyb63mZjvLYe3PTK9H23R4pvUAWhEenWvuEiZrBlaXxnJrffOPsatdYsVpazBp0Dj00vFArIUr00MDRD54Mv'
-#STRIPE_SECRET_KEY = 'sk_test_51P6bjmP7mfHF0Evycoz5E7nkwaqOMUhIIXNm0ngrZSvN9Ue7w4SgnTjdSV0GrH2TDyMrHLLOCi1qPUU1a2efmdML00U27vN6O5'
+STRIPE_PUBLISHABLE_KEY = 'pk_test_51P6bjmP7mfHF0Evyb63mZjvLYe3PTK9H23R4pvUAWhEenWvuEiZrBlaXxnJrffOPsatdYsVpazBp0Dj00vFArIUr00MDRD54Mv'
+STRIPE_SECRET_KEY = 'sk_test_51P6bjmP7mfHF0Evycoz5E7nkwaqOMUhIIXNm0ngrZSvN9Ue7w4SgnTjdSV0GrH2TDyMrHLLOCi1qPUU1a2efmdML00U27vN6O5'
 ALLOWED_HOSTS = []
 
 
@@ -78,8 +78,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'jewelryshop.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
+'''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -97,7 +96,7 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-'''
+
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators

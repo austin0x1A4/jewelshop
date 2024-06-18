@@ -216,17 +216,16 @@ def minus_cart(request, cart_id):
             cp.quantity -= 1
             cp.save()
     return redirect('store:cart')
-
+import stripe
+stripe.api_key = settings.STRIPE_SECRET_KEY
 @login_required
 def checkout(request):
     user = request.user
     cart_items = Cart.objects.filter(user=user)
 
-    total_price = sum(item.product.price * item.quantity for item in cart_items)
-
     combined_data = [(item, item.product.price * item.quantity) for item in cart_items]
     amount = sum(item[1] for item in combined_data)
-    shipping_amount = Decimal('10.00')  # Example shipping cost
+    shipping_amount = Decimal('10.00')
     total_amount = amount + shipping_amount
     address_id = request.GET.get('address_id')
     address = Address.objects.filter(id=address_id, user=user).first()
@@ -235,27 +234,19 @@ def checkout(request):
         messages.error(request, 'No address selected or entered. Please return to cart and select an address.')
         return redirect('store:cart')
 
-    # Create orders for each item in the cart
-    for cart_item in cart_items:
-        Order.objects.create(
-            user=user,
-            address=address,
-            product=cart_item.product,
-            quantity=cart_item.quantity
-        )
-        # Optionally, update the status of the cart item
-        cart_item.status = 'Ordered'
-        cart_item.save()
-
-    # Optionally, clear the cart after creating orders
-    # cart_items.delete()
+    # Create a Stripe PaymentIntent
+    intent = stripe.PaymentIntent.create(
+        amount=int(total_amount * 100),  # Stripe uses cents
+        currency='usd',
+        metadata={'user_id': user.id},
+    )
 
     context = {
         'cart_items': cart_items,
-        'total_price': total_price,
+        'total_price': total_amount,
         'address': address,
-        'merchant_id': settings.AMAZON_PAY['merchant_id'],
-        'total_amount': total_amount,
+        'client_secret': intent.client_secret,
+        'stripe_publishable_key': settings.STRIPE_PUBLISHABLE_KEY,
         'combined_data': combined_data,
         'amount': amount,
         'shipping_amount': shipping_amount,
@@ -283,37 +274,23 @@ from .utils import calculate_total_price
 @login_required
 def process_payment(request):
     if request.method == 'POST':
-        client = get_amazon_pay_client()
-        order_reference_id = request.POST['orderReferenceId']
+        user = request.user
+        cart_items = Cart.objects.filter(user=user)
+        address_id = request.POST.get('address_id')
+        address = get_object_or_404(Address, id=address_id)
 
-        # Confirm the order reference
-        client.confirm_order_reference(order_reference_id=order_reference_id)
-        
-        # Make payment
-        total_price = sum(item.product.price * item.quantity for item in Cart.objects.filter(user=request.user))
-        response = client.authorize(
-            amazon_order_reference_id=order_reference_id,
-            authorization_reference_id='YourUniqueReferenceId',
-            authorization_amount=settings.AMAZON_PAY['currency_code'] + ' ' + str(total_price),  
-            transaction_timeout=0,
-            capture_now=True
-        )
+        # Create orders for each item in the cart
+        for cart_item in cart_items:
+            Order.objects.create(
+                user=user,
+                address=address,
+                product=cart_item.product,
+                quantity=cart_item.quantity
+            )
+            cart_item.delete()
 
-        if response.success():
-            # Create Order record
-            for item in Cart.objects.filter(user=request.user):
-                Order.objects.create(
-                    user=request.user,
-                    address=get_object_or_404(Address, id=request.POST['address_id']),
-                    product=item.product,
-                    quantity=item.quantity,
-                )
-                item.delete()
-            return redirect('store:payment_success')
-        else:
-            messages.error(request, "Payment failed. Please try again.")
-            return redirect('store:checkout')
-    return redirect('store:checkout')
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
 
 @login_required
 def payment_success(request):
