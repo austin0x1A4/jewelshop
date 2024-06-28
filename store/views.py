@@ -15,7 +15,8 @@ from django.conf import settings
 from django.db import IntegrityError
 from django.db.models import Q
 from decimal import Decimal
-from .utils import get_amazon_pay_client
+from django.core.mail import send_mail
+#from .utils import get_amazon_pay_client
 # Create your views here.
 
 def home(request):
@@ -299,4 +300,65 @@ def payment_success(request):
 @login_required
 def payment_failure(request):
     return render(request, 'store/payment_failure.html')
-    
+from django.views.decorators.csrf import csrf_protect   
+from .forms import ContactForm
+def send_contact_email(subject, message, sender_email, admin_emails, user_email=None):
+  
+    admin_message = f"Subject: {subject}\n\nMessage:\n{message}\n\nFrom: {sender_email}"
+    send_mail(
+        subject,
+        admin_message,
+        sender_email,  # Sender email
+        admin_emails,  # Receiver email
+        fail_silently=False,
+    )
+
+    if user_email:
+        confirmation_subject = "Your message has been received"
+        confirmation_message = (
+            "Thank you for contacting us.\n\n"
+            "We have received your message and will get back to you shortly.\n\n"
+            "Please find the details of your message below:\n\n"
+            f"Subject: {subject}\n\n"
+            f"Message:\n{message}"
+        )
+        send_mail(
+            confirmation_subject,
+            confirmation_message,
+            admin_emails[0],  # Send from admin email
+            [user_email],  # Send to user email
+            fail_silently=False,
+        )
+
+@method_decorator(csrf_protect, name='dispatch')
+class ContactView(View):
+    def get(self, request):
+        """
+        Render the contact form.
+        """
+        form = ContactForm()
+        return render(request, 'store/contact.html', {'form': form})
+
+    def post(self, request):
+        """
+        Handle the submitted contact form.
+        """
+        form = ContactForm(request.POST)
+        email = request.POST.get('email')
+
+        if form.is_valid():
+            subject = form.cleaned_data['subject']
+            message = form.cleaned_data['message']
+            admin_emails = [admin[1] for admin in settings.ADMINS]
+
+            try:
+                send_contact_email(subject, message, email, admin_emails, email)
+            except Exception as e:
+                # Log the error or display an appropriate error message
+                print(f"Error sending email: {e}")
+                messages.error(request, "An error occurred while sending your message. Please try again later.")
+            else:
+                messages.success(request, 'Your message has been sent successfully!')
+                return redirect('store:contact')
+
+        return render(request, 'store/contact.html', {'form': form})

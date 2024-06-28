@@ -19,12 +19,14 @@ urlpatterns = [
     path('orders/', views.orders, name="orders"),
     path('process-payment/', views.process_payment, name='process_payment'),
     path('payment-success/', views.payment_success, name='payment_success'),
+    path('contact/', views.ContactView.as_view(), name='contact'),
 
 
     #URL for Products
     path('product/<slug:slug>/', views.detail, name="product-detail"),
     path('categories/', views.all_categories, name="all-categories"),
     path('shop/', views.shop, name="shop"),
+    
     path('<slug:slug>/', views.category_products, name="category-products"),
 
     

@@ -17,15 +17,14 @@ SECRET_KEY = 'django-insecure-3%y3laftm62q0zaj+s7#p-xqq9(&#q+)s8)p-&#&bz*0$!xu$0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 # settings.py
-
-AMAZON_PAY = {
-    'merchant_id': 'YOUR_MERCHANT_ID',
-    'access_key': 'YOUR_ACCESS_KEY',
-    'secret_key': 'YOUR_SECRET_KEY',
-    'sandbox': True,  # Set to False for production
-    'currency_code': 'USD',
-    'region': 'us'  # Change based on your region
-}
+ADMINS = [('Hevl PhD', 'rbnndng@gmail.com')]
+DEFAULT_FROM_EMAIL = 'austin90.inc@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'rbnndng@gmail.com'
+EMAIL_HOST_PASSWORD = 'ceyf john suhz rrrc'
 
 STRIPE_PUBLISHABLE_KEY = 'pk_test_51P6bjmP7mfHF0Evyb63mZjvLYe3PTK9H23R4pvUAWhEenWvuEiZrBlaXxnJrffOPsatdYsVpazBp0Dj00vFArIUr00MDRD54Mv'
 STRIPE_SECRET_KEY = 'sk_test_51P6bjmP7mfHF0Evycoz5E7nkwaqOMUhIIXNm0ngrZSvN9Ue7w4SgnTjdSV0GrH2TDyMrHLLOCi1qPUU1a2efmdML00U27vN6O5'
@@ -77,8 +76,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'jewelryshop.wsgi.application'
 
-
 '''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
