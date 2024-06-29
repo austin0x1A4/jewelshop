@@ -32,12 +32,6 @@ ALLOWED_HOSTS = []
 
 
 
-PAYMENT_SUCCESS_URL = 'http://yourdomain.com/payment-success/'
-PAYMENT_CANCEL_URL = 'http://yourdomain.com/payment-cancelled/'
-
-BACKEND_DOMAIN = 'http://yourdomain.com'
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
