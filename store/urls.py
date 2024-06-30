@@ -15,11 +15,11 @@ urlpatterns = [
     path('plus-cart/<int:cart_id>/', views.plus_cart, name="plus-cart"),
     path('minus-cart/<int:cart_id>/', views.minus_cart, name="minus-cart"),
     path('cart/', views.cart, name="cart"),
-    path('checkout/', views.checkout, name='checkout'),
+    path('checkout/', views.checkout, name="checkout"),
     path('orders/', views.orders, name="orders"),
-    path('process-payment/', views.process_payment, name='process_payment'),
-    path('payment-success/', views.payment_success, name='payment_success'),
-    path('contact/', views.ContactView.as_view(), name='contact'),
+    path('process-payment/', views.process_payment, name="process_payment"),
+    path('payment-success/', views.payment_success, name="payment_success"),
+    path('contact/', views.ContactView.as_view(), name="contact"),
 
 
     #URL for Products
